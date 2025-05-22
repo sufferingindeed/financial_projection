@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Feasibility Study: Kids' Coding School Yangon</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Visualization & Content Choices:
+        - Overview: Text. Goal: Inform.
+        - Key Metrics Dashboard: Bar charts for Initial Investment, Payback, ROI, NPV, IRR. Goal: Compare. Viz: Chart.js. Interaction: Hover, toggle. Added text explanations for key financial terms.
+        - Initial Setup Costs: HTML Table. Goal: Inform.
+        - Operational Costs: Stacked Bar Chart (Chart.js) for Y1 components; Line chart for 5-yr trend. Goal: Compare/Inform/Change. Interaction: Hover.
+        - Revenue Scenarios: Grouped Bar Chart (Chart.js) or dynamic text update via buttons. Goal: Compare. Interaction: Buttons to switch scenario.
+        - Break-Even: Text display. Goal: Inform.
+        - 5-Year P&L: Line chart (Revenue, OpEx, Net Profit). Goal: Change. Viz: Chart.js. Interaction: Hover.
+        - 5-Year Cash Flow: Line chart (Closing Balance). Goal: Change. Viz: Chart.js. Interaction: Hover.
+        - Comparative Tables/Text: HTML. Goal: Inform/Compare.
+        - Sensitivity Analysis: HTML Table. Goal: Inform. (Gemini API feature removed)
+        - Conclusion & Next Steps: HTML list. Goal: Inform. (Gemini API feature removed)
+        - Justification: Chosen visualizations are standard for financial data, easy to understand, and support comparison and trend analysis. Interactions aim to allow users to focus on specific data points or scenarios. Term definitions enhance understanding. NO SVG/Mermaid used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #FDFBF6; color: #3A3A3A; }
+        .tab-button { padding: 0.75rem 1.5rem; margin-right: 0.5rem; border-radius: 0.5rem 0.5rem 0 0; background-color: #E2E8F0; color: #3A3A3A; transition: background-color 0.3s, color 0.3s; font-weight: 500; }
+        .tab-button.active { background-color: #A0AEC0; color: white; }
+        .tab-button:hover { background-color: #CBD5E0; }
+        .tab-button.active:hover { background-color: #A0AEC0; }
+        .tab-content { display: none; padding: 1.5rem; border: 1px solid #E2E8F0; border-top: none; border-radius: 0 0 0.5rem 0.5rem; background-color: white;}
+        .tab-content.active { display: block; }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+        h2 { font-size: 1.75rem; font-weight: 600; margin-bottom: 1rem; color: #718096; }
+        h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; margin-top:1.5rem; color: #718096; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+        th, td { border: 1px solid #E2E8F0; padding: 0.75rem; text-align: left; }
+        th { background-color: #F1F5F9; font-weight: 600; }
+        .metric-card { background-color: #F8FAFC; padding: 1rem; border-radius: 0.5rem; border: 1px solid #E2E8F0; margin-bottom:1rem; }
+        .metric-card h4 { font-size: 1rem; font-weight: 600; color: #4A5568; margin-bottom: 0.25rem;}
+        .metric-card p { font-size: 1.25rem; font-weight: 700; color: #2D3748; }
+        .scenario-button { background-color: #E2E8F0; color: #3A3A3A; padding: 0.5rem 1rem; border-radius: 0.375rem; margin-right: 0.5rem; transition: background-color 0.3s; }
+        .scenario-button.active { background-color: #A0AEC0; color: white; }
+        .scenario-button:hover { background-color: #CBD5E0; }
+        .nav-item { cursor: pointer; }
+        .section-intro { margin-bottom: 1.5rem; font-size: 1rem; line-height: 1.6; color: #4A5568;}
+        .highlight-recommendation { background-color: #E6FFFA; border-left: 4px solid #38B2AC; padding: 1rem; margin-bottom: 1.5rem; border-radius: 0.25rem;}
+        .term-definition { background-color: #F9FAFB; padding: 0.75rem; border-radius: 0.375rem; margin-bottom: 0.75rem; border: 1px solid #E5E7EB;}
+        .term-definition strong { color: #374151; }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-[#3A3A3A] mb-2">Financial Feasibility Study & Strategic Plan</h1>
+            <p class="text-xl text-[#718096]">Kids' Coding School in Yangon, Myanmar</p>
+        </header>
+
+        <nav id="tabNav" class="flex flex-wrap mb-[-1px]">
+            <button class="tab-button active nav-item" data-tab="overview">Overview</button>
+            <button class="tab-button nav-item" data-tab="dashboard">Key Metrics Dashboard</button>
+            <button class="tab-button nav-item" data-tab="tawWin">Taw Win Center Details</button>
+            <button class="tab-button nav-item" data-tab="timeLink">Time Link Condo Details</button>
+            <button class="tab-button nav-item" data-tab="comparative">Comparative Analysis</button>
+            <button class="tab-button nav-item" data-tab="projections">Financial Projections & KPIs</button>
+            <button class="tab-button nav-item" data-tab="sensitivity">Sensitivity Analysis</button>
+            <button class="tab-button nav-item" data-tab="conclusion">Conclusion & Next Steps</button>
+        </nav>
+
+        <div id="tabContent">
+            <div id="overview" class="tab-content active">
+                <h2>Welcome to the Interactive Financial Feasibility Study</h2>
+                <p class="section-intro">
+                    This interactive application presents a summary of the "Financial Feasibility Study and Strategic Plan for Establishing a Kids' Coding School in Yangon, Myanmar." The study evaluates two potential locations: Taw Win Center and Time Link Condo. It covers initial setup costs, operational expenditures, revenue forecasts, break-even points, and five-year financial projections. The goal is to provide a clear, data-driven foundation for investment decisions and strategic planning. Navigate through the tabs to explore detailed financial data, comparisons, and the final recommendations.
+                </p>
+                <div class="highlight-recommendation">
+                    <h3 class="text-lg font-semibold text-[#2C7A7B]">Overall Recommendation</h3>
+                    <p class="mt-1 text-[#2D3748]">Based on a comprehensive financial and strategic evaluation, <strong>Time Link Condo</strong> is the recommended location for establishing the kids' coding school. This is primarily due to its lower initial investment, faster payback period, and higher overall Return on Investment (ROI) and Internal Rate of Return (IRR).</p>
+                    <button class="mt-4 bg-[#A0AEC0] hover:bg-[#718096] text-white font-semibold py-2 px-4 rounded-lg transition duration-300" onclick="navigateToTab('dashboard')">Explore Detailed Comparison</button>
+                </div>
+                <h3>About This Application</h3>
+                <p class="section-intro">
+                    Use the navigation tabs above to delve into specific sections of the report. You'll find:
+                </p>
+                <ul class="list-disc list-inside space-y-1 text-[#4A5568] mb-4">
+                    <li><strong>Key Metrics Dashboard:</strong> A quick comparison of the most critical financial indicators for both locations, along with explanations of these terms.</li>
+                    <li><strong>Location Details (Taw Win & Time Link):</strong> In-depth financial breakdowns for each potential site.</li>
+                    <li><strong>Comparative Analysis:</strong> A side-by-side look at financial performance and strategic considerations.</li>
+                    <li><strong>Financial Projections & KPIs:</strong> Visualizations of 5-year profit & loss, cash flow, and key investment metrics.</li>
+                    <li><strong>Sensitivity Analysis:</strong> How changes in key assumptions impact financial outcomes.</li>
+                    <li><strong>Conclusion & Next Steps:</strong> A summary of the report's findings and actionable recommendations.</li>
+                </ul>
+                 <p class="section-intro">All monetary values are in Myanmar Kyat (MMK) unless stated otherwise. An exchange rate of $1 USD = 4500 MMK$ and an 8% annual MMK inflation rate (from Year 2) are used as per the source report.</p>
+            </div>
+
+            <div id="dashboard" class="tab-content">
+                <h2>Key Metrics Dashboard: Taw Win Center vs. Time Link Condo</h2>
+                <p class="section-intro">
+                    This dashboard provides a high-level comparison of the key financial metrics for establishing the kids' coding school at Taw Win Center versus Time Link Condo. These metrics are crucial for understanding the overall financial attractiveness and risk profile of each location. All figures are based on the 'Realistic Scenario' projections from the report. Explanations for these financial terms are provided below the charts.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3>Initial Investment (MMK)</h3>
+                        <div class="chart-container h-[250px] max-h-[300px]"><canvas id="initialInvestmentChart"></canvas></div>
+                        <p class="text-sm text-center mt-2 text-gray-600">Lower initial investment reduces upfront capital risk.</p>
+                    </div>
+                    <div>
+                        <h3>Payback Period (Years)</h3>
+                        <div class="chart-container h-[250px] max-h-[300px]"><canvas id="paybackPeriodChart"></canvas></div>
+                        <p class="text-sm text-center mt-2 text-gray-600">Shorter payback period means quicker return of capital.</p>
+                    </div>
+                    <div>
+                        <h3>5-Year Average ROI (%)</h3>
+                        <div class="chart-container h-[250px] max-h-[300px]"><canvas id="roiChart"></canvas></div>
+                        <p class="text-sm text-center mt-2 text-gray-600">Higher ROI indicates better profitability relative to investment.</p>
+                    </div>
+                    <div>
+                        <h3>Internal Rate of Return (IRR, %)</h3>
+                        <div class="chart-container h-[250px] max-h-[300px]"><canvas id="irrChart"></canvas></div>
+                        <p class="text-sm text-center mt-2 text-gray-600">Higher IRR signifies a more financially attractive project.</p>
+                    </div>
+                    <div class="md:col-span-2">
+                        <h3>Net Present Value (NPV @12%, MMK)</h3>
+                        <div class="chart-container h-[250px] max-h-[300px]"><canvas id="npvChart"></canvas></div>
+                        <p class="text-sm text-center mt-2 text-gray-600">Positive NPV indicates the project is expected to generate value.</p>
+                    </div>
+                </div>
+
+                <h3 class="mt-8">Financial Terms Explained</h3>
+                <div class="space-y-3">
+                    <div class="term-definition">
+                        <p><strong>Initial Investment:</strong> The total capital required to start the project, including setup costs and initial working capital.</p>
+                    </div>
+                    <div class="term-definition">
+                        <p><strong>Payback Period:</strong> The length of time it takes for an investment to generate enough cash flow to cover its initial cost. A shorter payback period is generally preferred.</p>
+                    </div>
+                    <div class="term-definition">
+                        <p><strong>Return on Investment (ROI):</strong> A performance measure used to evaluate the efficiency or profitability of an investment. It is calculated as (Net Profit / Cost of Investment) * 100%. A higher ROI indicates better performance.</p>
+                    </div>
+                    <div class="term-definition">
+                        <p><strong>Internal Rate of Return (IRR):</strong> The discount rate at which the Net Present Value (NPV) of all cash flows (both positive and negative) from a particular investment equals zero. It represents the expected compound annual rate of return that will be earned on a project. A higher IRR is generally better.</p>
+                    </div>
+                    <div class="term-definition">
+                        <p><strong>Net Present Value (NPV):</strong> The difference between the present value of future cash inflows and the present value of cash outflows over a period of time. NPV is used in capital budgeting to analyze the profitability of a projected investment. A positive NPV indicates that the projected earnings generated by a project (in present dollar terms) exceeds the anticipated costs (also in present dollar terms). Generally, a positive NPV is desirable.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tawWin" class="tab-content">
+                <h2>Taw Win Center: Detailed Financial Feasibility</h2>
+                <p class="section-intro">
+                    This section provides a detailed financial breakdown for establishing the kids' coding school at Taw Win Center. It includes initial setup costs, projected operational expenses, revenue forecasts under different scenarios, break-even analysis, and summaries of the 5-year financial statements. Understanding these details is crucial for assessing the viability of this location.
+                </p>
+
+                <h3>Initial Setup Costs</h3>
+                <div id="tawWinInitialCostsTable" class="overflow-x-auto"></div>
+                <p class="text-sm text-gray-600 mt-1">Total Initial Outlay (Setup + 3 Mo. OpEx Buffer): <strong>70,296,031 MMK</strong></p>
+
+                <h3>Monthly Operational Costs (Year 1)</h3>
+                <div id="tawWinMonthlyOpExTable" class="overflow-x-auto"></div>
+                <p class="text-sm text-gray-600 mt-1">Total Annual OpEx (Year 1): <strong>79,800,000 MMK</strong>. Costs inflate at 8% annually from Year 2.</p>
+
+                <h3>Revenue Projections (Year 1)</h3>
+                <div class="mb-4">
+                    <button class="scenario-button active" data-location="tawWin" data-scenario="realistic">Realistic</button>
+                    <button class="scenario-button" data-location="tawWin" data-scenario="pessimistic">Pessimistic</button>
+                    <button class="scenario-button" data-location="tawWin" data-scenario="optimistic">Optimistic</button>
+                </div>
+                <div id="tawWinRevenueDetails" class="metric-card">
+                    <h4>Realistic Scenario - Year 1</h4>
+                    <p>Avg. Monthly Students: 48</p>
+                    <p>Avg. Monthly Revenue: 12,000,000 MMK</p>
+                    <p>Total Annual Revenue: 144,000,000 MMK</p>
+                </div>
+
+                <h3>Break-Even Analysis (Year 1)</h3>
+                <div class="metric-card">
+                    <p>Break-Even Students per Month: <strong>27</strong></p>
+                    <p class="text-sm">(Based on Avg. Revenue/Student of 250,000 MMK & Monthly OpEx of 6,650,000 MMK)</p>
+                </div>
+
+                <h3>5-Year Profit & Loss Projection Summary (Realistic Scenario)</h3>
+                <div class="chart-container"><canvas id="tawWinPnLChart"></canvas></div>
+
+                <h3>5-Year Cash Flow Projection Summary (Realistic Scenario)</h3>
+                <div class="chart-container"><canvas id="tawWinCFChart"></canvas></div>
+            </div>
+
+            <div id="timeLink" class="tab-content">
+                <h2>Time Link Condo: Detailed Financial Feasibility</h2>
+                <p class="section-intro">
+                    This section provides a detailed financial breakdown for establishing the kids' coding school at Time Link Condo. Similar to the Taw Win Center analysis, it covers initial setup costs, operational expenses, revenue forecasts, break-even points, and 5-year financial statement summaries. This allows for a direct comparison of the two locations' financial profiles.
+                </p>
+
+                <h3>Initial Setup Costs</h3>
+                <div id="timeLinkInitialCostsTable" class="overflow-x-auto"></div>
+                <p class="text-sm text-gray-600 mt-1">Total Initial Outlay (Setup + 3 Mo. OpEx Buffer): <strong>59,946,031 MMK</strong></p>
+
+                <h3>Monthly Operational Costs (Year 1)</h3>
+                <div id="timeLinkMonthlyOpExTable" class="overflow-x-auto"></div>
+                <p class="text-sm text-gray-600 mt-1">Total Annual OpEx (Year 1): <strong>94,200,000 MMK</strong>. Costs inflate at 8% annually from Year 2.</p>
+
+                <h3>Revenue Projections (Year 1)</h3>
+                 <div class="mb-4">
+                    <button class="scenario-button active" data-location="timeLink" data-scenario="realistic">Realistic</button>
+                    <button class="scenario-button" data-location="timeLink" data-scenario="pessimistic">Pessimistic</button>
+                    <button class="scenario-button" data-location="timeLink" data-scenario="optimistic">Optimistic</button>
+                </div>
+                <div id="timeLinkRevenueDetails" class="metric-card">
+                    <h4>Realistic Scenario - Year 1</h4>
+                    <p>Avg. Monthly Students: 48</p>
+                    <p>Avg. Monthly Revenue: 12,000,000 MMK</p>
+                    <p>Total Annual Revenue: 144,000,000 MMK</p>
+                </div>
+
+                <h3>Break-Even Analysis (Year 1)</h3>
+                <div class="metric-card">
+                    <p>Break-Even Students per Month: <strong>32</strong></p>
+                    <p class="text-sm">(Based on Avg. Revenue/Student of 250,000 MMK & Monthly OpEx of 7,850,000 MMK)</p>
+                </div>
+
+                <h3>5-Year Profit & Loss Projection Summary (Realistic Scenario)</h3>
+                <div class="chart-container"><canvas id="timeLinkPnLChart"></canvas></div>
+
+                <h3>5-Year Cash Flow Projection Summary (Realistic Scenario)</h3>
+                <div class="chart-container"><canvas id="timeLinkCFChart"></canvas></div>
+            </div>
+
+            <div id="comparative" class="tab-content">
+                <h2>Comparative Location Analysis</h2>
+                <p class="section-intro">
+                    This section directly compares Taw Win Center and Time Link Condo across key financial and strategic dimensions. The aim is to highlight the differences that lead to the final recommendation. The financial data presented here is based on the 'Realistic Scenario' for both locations.
+                </p>
+                <h3>Side-by-Side Financial Performance Review</h3>
+                <div id="financialComparisonTable" class="overflow-x-auto"></div>
+
+                <h3>Assessment of Strategic Advantages and Disadvantages</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4>Taw Win Center</h4>
+                        <div class="bg-green-50 p-3 rounded-md border border-green-200 mb-2">
+                            <h5 class="font-semibold text-green-700">Advantages:</h5>
+                            <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+                                <li>High market reach & visibility (mall foot traffic)</li>
+                                <li>Brand perception enhanced by mall association</li>
+                                <li>Potential for incidental discovery due to tenant mix</li>
+                            </ul>
+                        </div>
+                        <div class="bg-red-50 p-3 rounded-md border border-red-200">
+                            <h5 class="font-semibold text-red-700">Disadvantages:</h5>
+                            <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+                                <li>High renovation cost (12,000,000 MMK)</li>
+                                <li>Potentially restrictive mall operating hours (e.g., 9 AM - 6 PM)</li>
+                                <li>Distracting environment, potential direct competition in mall</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>Time Link Condo</h4>
+                        <div class="bg-green-50 p-3 rounded-md border border-green-200 mb-2">
+                            <h5 class="font-semibold text-green-700">Advantages:</h5>
+                            <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+                                <li>Lower initial investment (renovation 3,000,000 MMK)</li>
+                                <li>Targeted market reach (affluent residential community)</li>
+                                <li>Potentially more flexible operating hours</li>
+                                <li>Could foster a strong community feel</li>
+                            </ul>
+                        </div>
+                        <div class="bg-red-50 p-3 rounded-md border border-red-200">
+                            <h5 class="font-semibold text-red-700">Disadvantages:</h5>
+                            <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+                                <li>Higher monthly rent (3,200,000 MMK)</li>
+                                <li>Lower general foot traffic, requires targeted marketing</li>
+                                <li>Proximity to international schools (potential competition)</li>
+                                <li>Requires more effort for brand building</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Final Recommendation with ROI-Driven Rationale</h3>
+                <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                    <p class="text-gray-700">
+                        <strong>Time Link Condo is the recommended location.</strong>
+                        The primary drivers are its superior financial return profile:
+                    </p>
+                    <ul class="list-disc list-inside text-sm text-gray-700 mt-2 space-y-1">
+                        <li>Lower Initial Investment: Over 10 million MMK less in startup capital.</li>
+                        <li>Faster Payback Period: 2.20 years vs. 2.85 years for Taw Win Center.</li>
+                        <li>Higher Internal Rate of Return (IRR): 87.0% vs. 69.8% for Taw Win Center.</li>
+                        <li>Higher Average ROI: 138.5% vs. 115.8% for Taw Win Center.</li>
+                    </ul>
+                    <p class="text-sm text-gray-700 mt-2">
+                        While Taw Win Center projects slightly higher annual net profits once established, the substantial upfront capital savings and consequently faster capital recovery at Time Link Condo make it a more attractive investment, particularly for a new venture where minimizing initial risk and accelerating return of capital are paramount. Strategically, Time Link Condo's potential for more flexible operating hours and targeted demographic access also support this choice.
+                    </p>
+                </div>
+            </div>
+
+            <div id="projections" class="tab-content">
+                <h2>Financial Projections & Key Performance Indicators (KPIs)</h2>
+                <p class="section-intro">
+                    This section visualizes the 5-year financial projections for both locations under the 'Realistic Scenario'. It also provides a direct comparison of key investment metrics. These charts help in understanding the long-term financial trajectory and the relative attractiveness of each investment.
+                </p>
+                <div>
+                    <label for="projectionLocationToggle" class="mr-2 font-medium">Select Location:</label>
+                    <select id="projectionLocationToggle" class="p-2 border border-gray-300 rounded-md">
+                        <option value="tawWin" selected>Taw Win Center</option>
+                        <option value="timeLink">Time Link Condo</option>
+                    </select>
+                </div>
+
+                <h3 class="mt-6">5-Year Profit & Loss Trend (Selected Location)</h3>
+                <div class="chart-container"><canvas id="mainPnLChart"></canvas></div>
+
+                <h3 class="mt-6">5-Year Cash Flow Trend (Closing Balance - Selected Location)</h3>
+                <div class="chart-container"><canvas id="mainCFChart"></canvas></div>
+                
+                <h3 class="mt-6">Key Investment Metrics Comparison</h3>
+                <div class="chart-container"><canvas id="investmentMetricsChart"></canvas></div>
+                 <p class="text-sm text-center mt-2 text-gray-600">Comparing Payback Period, 5-Yr Avg. ROI, NPV, and IRR.</p>
+            </div>
+            
+            <div id="sensitivity" class="tab-content">
+                <h2>Sensitivity Analysis</h2>
+                <p class="section-intro">
+                    The financial projections are sensitive to variations in key assumptions. This section summarizes the potential impact of changes in student enrollment, average tuition fees, and total operational expenses on Year 3 Net Profit and the Payback Period for both locations. This analysis helps in understanding the project's resilience to changing market conditions.
+                </p>
+                <h3>Taw Win Center - Sensitivity Impact</h3>
+                <div id="tawWinSensitivityTable" class="overflow-x-auto"></div>
+
+                <h3>Time Link Condo - Sensitivity Impact</h3>
+                <div id="timeLinkSensitivityTable" class="overflow-x-auto"></div>
+                <p class="text-sm text-gray-600 mt-2">
+                    Generally, profitability is highly sensitive to student enrollment and tuition fees. Operational cost increases also impact profitability and payback, but to a slightly lesser extent than revenue drivers. Time Link Condo's profitability is slightly more sensitive to revenue fluctuations due to its higher fixed rent.
+                </p>
+            </div>
+
+            <div id="conclusion" class="tab-content">
+                <h2>Conclusion and Actionable Next Steps</h2>
+                <p class="section-intro">
+                    The financial feasibility study indicates that establishing a kids' coding school in Yangon is a viable venture. After a thorough comparison, Time Link Condo emerges as the recommended location due to its more favorable initial investment profile and return metrics.
+                </p>
+                <h3>Overall Findings Summary</h3>
+                <ul class="list-disc list-inside space-y-1 text-[#4A5568] mb-4">
+                    <li>Both locations show pathways to profitability.</li>
+                    <li>Taw Win Center: High visibility, but high initial renovation cost and potentially restrictive hours.</li>
+                    <li>Time Link Condo: Higher monthly rent, but significantly lower initial investment, faster payback, higher IRR & ROI. Potential for flexible hours and targeted marketing to an affluent residential demographic.</li>
+                </ul>
+                <div class="highlight-recommendation">
+                     <h3 class="text-lg font-semibold text-[#2C7A7B]">Final Recommendation: Time Link Condo</h3>
+                    <p class="mt-1 text-[#2D3748]">The lower upfront capital requirement reduces initial financial risk and allows for a quicker return of investment, critical for a new enterprise.</p>
+                </div>
+
+                <h3>Actionable Next Steps</h3>
+                <p class="section-intro">
+                    To move forward with establishing the kids' coding school at the recommended Time Link Condo location, the following steps are crucial:
+                </p>
+                <ol class="list-decimal list-inside space-y-2 text-[#4A5568]">
+                    <li><strong>Secure Initial Funding:</strong> Develop a detailed funding proposal for approx. 59.95 million MMK (covering setup, deposit, and 3 months working capital) and approach potential investors or financial institutions.</li>
+                    <li><strong>Company Registration and Licensing:</strong> Complete formal registration with DICA and obtain necessary licenses from YCDC and the Ministry of Education.</li>
+                    <li><strong>Finalize Lease Agreement:</strong> Secure the lease for the commercial space at Time Link Condo, ensuring favorable terms.</li>
+                    <li><strong>Detailed Curriculum Development and Procurement:</strong> Finalize curriculum for different age groups and procure/license educational software and materials.</li>
+                    <li><strong>Recruitment of Key Personnel:</strong> Hire Lead Instructor, Assistant Instructor (if needed), and Administrative Staff.</li>
+                    <li><strong>Develop and Launch Marketing Campaign:</strong> Design and implement a targeted marketing strategy, especially for the Bahan area.
+                    </li>
+                    <li><strong>Premises Fit-Out and Equipment Installation:</strong> Oversee renovation and install all necessary equipment.</li>
+                    <li><strong>Establish Operational Systems:</strong> Implement systems for student registration, fee collection, scheduling, and parent communication (LMS, accounting software).</li>
+                    <li><strong>Contingency Planning:</strong> Refine plans for key risks identified, particularly concerning instructor availability and infrastructure stability (power, internet).</li>
+                </ol>
+                <p class="mt-4 text-sm text-gray-600">A phased implementation, starting with core courses and expanding based on market response, is advisable to manage risks effectively.</p>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const appData = {
+        tawWin: {
+            initialInvestment: 70296031,
+            paybackPeriod: 2.85,
+            roi: 115.8,
+            npv: 135477930,
+            irr: 69.8,
+            initialCosts: [
+                { item: "Rent Security Deposit", costMMK: 4000000, notes: "2 months' rent" },
+                { item: "Renovation Costs", costMMK: 12000000, notes: "Provided data" },
+                { item: "Equipment Costs (Laptops)", costMMK: 12000000, notes: "17 units" },
+                { item: "Additional Classroom Equipment", costMMK: 5000000, notes: "Projector/Interactive Whiteboard" },
+                { item: "Office & Classroom Furniture", costMMK: 5000000, notes: "Desks, chairs, storage" },
+                { item: "Initial Branding Costs", costMMK: 1500000, notes: "Logo (500k), Website (1M)" },
+                { item: "Marketing Collateral Printing", costMMK: 500000, notes: "Brochures, flyers" },
+                { item: "Administrative Costs", costMMK: 530000, notes: "DICA, YCDC, Co. Reg." },
+                { item: "Initial Software Purchase/Setup", costMMK: 2500000, notes: "Curriculum/Admin software" },
+                { item: "Subtotal Setup", costMMK: 43030000, notes: "" },
+                { item: "Contingency (15%)", costMMK: 6454500, notes: "" },
+                { item: "Total Initial Setup", costMMK: 49484500, notes: "" }
+            ],
+            monthlyOpEx: [
+                { item: "Rent", costMMK: 2000000, notes: "Utilities included" },
+                { item: "Salaries", costMMK: 2600000, notes: "Lead (1M), Asst (0.8M), Admin (0.5M), Clean (0.3M)" },
+                { item: "Marketing & Promotional Exp.", costMMK: 1000000, notes: "Digital, print, events" },
+                { item: "Supplies & Maintenance", costMMK: 300000, notes: "Classroom & office supplies" },
+                { item: "Software: LMS/Admin", costMMK: 200000, notes: "e.g., AfterSchool HQ" },
+                { item: "Software: Curriculum", costMMK: 150000, notes: "Ongoing access fees" },
+                { item: "Software: Accounting", costMMK: 100000, notes: "e.g., Patriot Software" },
+                { item: "Internet", costMMK: 100000, notes: "High-speed business plan" },
+                { item: "Other Admin/Miscellaneous", costMMK: 200000, notes: "Bank fees, transport" },
+                { item: "Total Monthly OpEx (Y1)", costMMK: 6650000, notes: "" }
+            ],
+            revenueScenarios: {
+                pessimistic: { students: 30, monthlyRevenue: 7500000, annualRevenue: 90000000, label: "Pessimistic Scenario - Year 1" },
+                realistic: { students: 48, monthlyRevenue: 12000000, annualRevenue: 144000000, label: "Realistic Scenario - Year 1" },
+                optimistic: { students: 65, monthlyRevenue: 16250000, annualRevenue: 195000000, label: "Optimistic Scenario - Year 1" }
+            },
+            pnlSummary: {
+                years: ["Year 1", "Year 2", "Year 3", "Year 4", "Year 5"],
+                revenue: [144000000, 172800000, 181440000, 190512000, 200037600],
+                opEx: [79800000, 86184000, 93078720, 100524019, 108565941],
+                netProfit: [41964000, 59448480, 60809798, 65198625, 66355894]
+            },
+            cfSummary: {
+                years: ["Year 1", "Year 2", "Year 3", "Year 4", "Year 5"],
+                closingBalance: [52364000, 122376480, 193750258, 261512883, 334432777],
+                netCashOps: [52364000, 70012480, 71373778, 71762625, 72919894]
+            },
+            sensitivity: [
+                { variable: "Student Enrollment", change: "-10%", impactProfit: "-16,500,000", impactPayback: "+7 Months" },
+                { variable: "Student Enrollment", change: "+10%", impactProfit: "+16,500,000", impactPayback: "-5 Months" },
+                { variable: "Average Tuition Fee", change: "-10%", impactProfit: "-17,500,000", impactPayback: "+8 Months" },
+                { variable: "Average Tuition Fee", change: "+10%", impactProfit: "+17,500,000", impactPayback: "-6 Months" },
+                { variable: "Total OpEx", change: "+10%", impactProfit: "-7,200,000", impactPayback: "+4 Months" }
+            ]
+        },
+        timeLink: {
+            initialInvestment: 59946031,
+            paybackPeriod: 2.20,
+            roi: 138.5,
+            npv: 136185687,
+            irr: 87.0,
+            initialCosts: [
+                { item: "Rent Security Deposit", costMMK: 6400000, notes: "2 months' rent" },
+                { item: "Renovation Costs", costMMK: 3000000, notes: "Provided data" },
+                { item: "Equipment Costs (Laptops)", costMMK: 12000000, notes: "17 units" },
+                { item: "Additional Classroom Equipment", costMMK: 5000000, notes: "Projector/Interactive Whiteboard" },
+                { item: "Office & Classroom Furniture", costMMK: 5000000, notes: "Desks, chairs, storage" },
+                { item: "Initial Branding Costs", costMMK: 1500000, notes: "Logo (500k), Website (1M)" },
+                { item: "Marketing Collateral Printing", costMMK: 500000, notes: "Brochures, flyers" },
+                { item: "Administrative Costs", costMMK: 530000, notes: "DICA, YCDC, Co. Reg." },
+                { item: "Initial Software Purchase/Setup", costMMK: 2500000, notes: "Curriculum/Admin software" },
+                { item: "Subtotal Setup", costMMK: 36430000, notes: "" },
+                { item: "Contingency (15%)", costMMK: 5464500, notes: "" },
+                { item: "Total Initial Setup", costMMK: 41894500, notes: "" }
+            ],
+            monthlyOpEx: [
+                { item: "Rent", costMMK: 3200000, notes: "Utilities included" },
+                { item: "Salaries", costMMK: 2600000, notes: "Lead (1M), Asst (0.8M), Admin (0.5M), Clean (0.3M)" },
+                { item: "Marketing & Promotional Exp.", costMMK: 1000000, notes: "Digital, print, events" },
+                { item: "Supplies & Maintenance", costMMK: 300000, notes: "Classroom & office supplies" },
+                { item: "Software: LMS/Admin", costMMK: 200000, notes: "e.g., AfterSchool HQ" },
+                { item: "Software: Curriculum", costMMK: 150000, notes: "Ongoing access fees" },
+                { item: "Software: Accounting", costMMK: 100000, notes: "e.g., Patriot Software" },
+                { item: "Internet", costMMK: 100000, notes: "High-speed business plan" },
+                { item: "Other Admin/Miscellaneous", costMMK: 200000, notes: "Bank fees, transport" },
+                { item: "Total Monthly OpEx (Y1)", costMMK: 7850000, notes: "" }
+            ],
+            revenueScenarios: { 
+                pessimistic: { students: 30, monthlyRevenue: 7500000, annualRevenue: 90000000, label: "Pessimistic Scenario - Year 1" },
+                realistic: { students: 48, monthlyRevenue: 12000000, annualRevenue: 144000000, label: "Realistic Scenario - Year 1" },
+                optimistic: { students: 65, monthlyRevenue: 16250000, annualRevenue: 195000000, label: "Optimistic Scenario - Year 1" }
+            },
+            pnlSummary: {
+                years: ["Year 1", "Year 2", "Year 3", "Year 4", "Year 5"],
+                revenue: [144000000, 172800000, 181440000, 190512000, 200037600],
+                opEx: [94200000, 101736000, 109874880, 118664870, 128158060],
+                netProfit: [32136000, 48721920, 49112794, 52452761, 52478041]
+            },
+            cfSummary: {
+                years: ["Year 1", "Year 2", "Year 3", "Year 4", "Year 5"],
+                closingBalance: [40736000, 98057920, 155770714, 208823475, 265901516],
+                netCashOps: [40736000, 57321920, 57712794, 57052761, 57078041]
+            },
+             sensitivity: [
+                { variable: "Student Enrollment", change: "-10%", impactProfit: "-16,000,000", impactPayback: "+6 Months" },
+                { variable: "Student Enrollment", change: "+10%", impactProfit: "+16,000,000", impactPayback: "-4 Months" },
+                { variable: "Average Tuition Fee", change: "-10%", impactProfit: "-17,000,000", impactPayback: "+7 Months" },
+                { variable: "Average Tuition Fee", change: "+10%", impactProfit: "+17,000,000", impactPayback: "-5 Months" },
+                { variable: "Total OpEx", change: "+10%", impactProfit: "-8,500,000", impactPayback: "+5 Months" }
+            ]
+        },
+        financialComparison: [
+            { criteria: "Total Initial Investment (MMK)", tawWin: "70,296,031", timeLink: "59,946,031", comment: "Time Link is ~14.7% lower" },
+            { criteria: "Key Monthly OpEx (Rent - MMK)", tawWin: "2,000,000", timeLink: "3,200,000", comment: "Time Link rent is 60% higher" },
+            { criteria: "Break-Even Students (Monthly)", tawWin: "27", timeLink: "32", comment: "Taw Win breaks even with fewer students" },
+            { criteria: "5-Yr Projected Avg Net Profit (MMK)", tawWin: "58,747,359", timeLink: "47,000,303", comment: "Taw Win shows higher average annual profit" },
+            { criteria: "Payback Period (Years)", tawWin: "2.85", timeLink: "2.20", comment: "Time Link offers faster capital recovery" },
+            { criteria: "ROI (5-Year Average)", tawWin: "115.8%", timeLink: "138.5%", comment: "Time Link provides higher ROI" },
+            { criteria: "NPV (MMK @12%)", tawWin: "135,477,930", timeLink: "136,185,687", comment: "Both positive; Time Link slightly higher" },
+            { criteria: "IRR", tawWin: "69.8%", timeLink: "87.0%", comment: "Time Link shows more efficient return" }
+        ]
+    };
+
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    const tabNav = document.getElementById('tabNav');
+
+    tabNav.addEventListener('click', (event) => {
+        if (event.target.classList.contains('nav-item')) {
+            const tabId = event.target.dataset.tab;
+            navigateToTab(tabId);
+        }
+    });
+    
+    function navigateToTab(tabId) {
+        tabButtons.forEach(button => {
+            button.classList.remove('active');
+            if (button.dataset.tab === tabId) {
+                button.classList.add('active');
+            }
+        });
+        tabContents.forEach(content => {
+            content.classList.remove('active');
+            if (content.id === tabId) {
+                content.classList.add('active');
+            }
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function formatMMK(value) {
+        return value.toLocaleString('en-US') + ' MMK';
+    }
+
+    function createTable(data, headers) {
+        const table = document.createElement('table');
+        const thead = table.createTHead();
+        const tbody = table.createTBody();
+        const headerRow = thead.insertRow();
+        headers.forEach(headerText => {
+            const th = document.createElement('th');
+            th.textContent = headerText;
+            headerRow.appendChild(th);
+        });
+        data.forEach(rowData => {
+            const row = tbody.insertRow();
+            Object.values(rowData).forEach(cellData => {
+                const cell = row.insertCell();
+                cell.textContent = typeof cellData === 'number' && (Object.keys(rowData)[Object.values(rowData).indexOf(cellData)] === 'costMMK' || Object.keys(rowData)[Object.values(rowData).indexOf(cellData)].toLowerCase().includes('mmk')) ? formatMMK(cellData) : cellData;
+            });
+        });
+        return table;
+    }
+
+    document.getElementById('tawWinInitialCostsTable').appendChild(createTable(appData.tawWin.initialCosts, ["Cost Item", "Estimated Cost (MMK)", "Notes"]));
+    document.getElementById('tawWinMonthlyOpExTable').appendChild(createTable(appData.tawWin.monthlyOpEx, ["Cost Item", "Estimated Monthly Cost (MMK)", "Notes"]));
+    document.getElementById('timeLinkInitialCostsTable').appendChild(createTable(appData.timeLink.initialCosts, ["Cost Item", "Estimated Cost (MMK)", "Notes"]));
+    document.getElementById('timeLinkMonthlyOpExTable').appendChild(createTable(appData.timeLink.monthlyOpEx, ["Cost Item", "Estimated Monthly Cost (MMK)", "Notes"]));
+    document.getElementById('financialComparisonTable').appendChild(createTable(appData.financialComparison, ["Criteria", "Taw Win Center", "Time Link Condo", "Comments"]));
+    document.getElementById('tawWinSensitivityTable').appendChild(createTable(appData.tawWin.sensitivity, ["Variable Changed", "% Change", "Impact on Year 3 Net Profit (MMK Change)", "Impact on Payback Period (Months Change)"]));
+    document.getElementById('timeLinkSensitivityTable').appendChild(createTable(appData.timeLink.sensitivity, ["Variable Changed", "% Change", "Impact on Year 3 Net Profit (MMK Change)", "Impact on Payback Period (Months Change)"]));
+
+
+    const scenarioButtons = document.querySelectorAll('.scenario-button');
+    scenarioButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const location = button.dataset.location;
+            const scenario = button.dataset.scenario;
+            
+            document.querySelectorAll(`.scenario-button[data-location="${location}"]`).forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            const details = appData[location].revenueScenarios[scenario];
+            const revenueDetailsDiv = document.getElementById(`${location}RevenueDetails`);
+            revenueDetailsDiv.innerHTML = `
+                <h4>${details.label}</h4>
+                <p>Avg. Monthly Students: ${details.students}</p>
+                <p>Avg. Monthly Revenue: ${formatMMK(details.monthlyRevenue)}</p>
+                <p>Total Annual Revenue: ${formatMMK(details.annualRevenue)}</p>
+            `;
+        });
+    });
+    
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        if (value >= 1000000) return (value / 1000000) + 'M';
+                        if (value >= 1000) return (value / 1000) + 'K';
+                        return value;
+                    }
+                }
+            },
+            x: {
+                 ticks: {
+                    maxRotation: 45,
+                    minRotation: 0,
+                    autoSkip: true,
+                    maxTicksLimit: 10,
+                     callback: function(value, index, values) {
+                        let label = this.getLabelForValue(value);
+                        if (typeof label === 'string' && label.length > 16) {
+                            return label.substring(0, 16) + '...';
+                        }
+                        return label;
+                    }
+                }
+            }
+        },
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                            label += ': ';
+                        }
+                        if (context.parsed.y !== null) {
+                             if (context.dataset.isPercentage) {
+                                label += context.parsed.y + '%';
+                            } else if (context.dataset.isYears) {
+                                label += context.parsed.y + ' Years';
+                            }
+                            else {
+                                label += formatMMK(context.parsed.y);
+                            }
+                        }
+                        return label;
+                    }
+                }
+            }
+        }
+    };
+    
+    const barChartOptionsNoFormat = JSON.parse(JSON.stringify(chartOptions));
+    barChartOptionsNoFormat.scales.y.ticks.callback = function(value) { return value; };
+     barChartOptionsNoFormat.plugins.tooltip.callbacks.label = function(context) {
+        let label = context.dataset.label || '';
+        if (label) { label += ': '; }
+        if (context.parsed.y !== null) {
+            if (context.dataset.isPercentage) {
+                label += context.parsed.y.toFixed(1) + '%';
+            } else if (context.dataset.isYears) {
+                label += context.parsed.y.toFixed(2) + ' Years';
+            } else {
+                label += context.parsed.y;
+            }
+        }
+        return label;
+    };
+
+
+    new Chart(document.getElementById('initialInvestmentChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Taw Win Center', 'Time Link Condo'],
+            datasets: [{
+                label: 'Initial Investment (MMK)',
+                data: [appData.tawWin.initialInvestment, appData.timeLink.initialInvestment],
+                backgroundColor: ['#A0AEC0', '#718096']
+            }]
+        },
+        options: chartOptions
+    });
+
+    new Chart(document.getElementById('paybackPeriodChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Taw Win Center', 'Time Link Condo'],
+            datasets: [{
+                label: 'Payback Period (Years)',
+                data: [appData.tawWin.paybackPeriod, appData.timeLink.paybackPeriod],
+                backgroundColor: ['#A0AEC0', '#718096'],
+                isYears: true
+            }]
+        },
+        options: barChartOptionsNoFormat
+    });
+
+    new Chart(document.getElementById('roiChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Taw Win Center', 'Time Link Condo'],
+            datasets: [{
+                label: '5-Year Average ROI (%)',
+                data: [appData.tawWin.roi, appData.timeLink.roi],
+                backgroundColor: ['#A0AEC0', '#718096'],
+                isPercentage: true
+            }]
+        },
+        options: barChartOptionsNoFormat
+    });
+    
+    new Chart(document.getElementById('irrChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Taw Win Center', 'Time Link Condo'],
+            datasets: [{
+                label: 'IRR (%)',
+                data: [appData.tawWin.irr, appData.timeLink.irr],
+                backgroundColor: ['#A0AEC0', '#718096'],
+                isPercentage: true
+            }]
+        },
+        options: barChartOptionsNoFormat
+    });
+
+    new Chart(document.getElementById('npvChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Taw Win Center', 'Time Link Condo'],
+            datasets: [{
+                label: 'NPV (@12% discount, MMK)',
+                data: [appData.tawWin.npv, appData.timeLink.npv],
+                backgroundColor: ['#A0AEC0', '#718096']
+            }]
+        },
+        options: chartOptions
+    });
+
+    function createPnLChart(canvasId, pnlData) {
+        return new Chart(document.getElementById(canvasId), {
+            type: 'line',
+            data: {
+                labels: pnlData.years,
+                datasets: [
+                    { label: 'Total Revenue', data: pnlData.revenue, borderColor: '#A0AEC0', tension: 0.1, fill: false },
+                    { label: 'Total OpEx', data: pnlData.opEx, borderColor: '#718096', tension: 0.1, fill: false },
+                    { label: 'Net Profit', data: pnlData.netProfit, borderColor: '#4A5568', tension: 0.1, fill: false, borderWidth: 2 }
+                ]
+            },
+            options: chartOptions
+        });
+    }
+    let tawWinPnLChartInstance = createPnLChart('tawWinPnLChart', appData.tawWin.pnlSummary);
+    let timeLinkPnLChartInstance = createPnLChart('timeLinkPnLChart', appData.timeLink.pnlSummary);
+
+    function createCFChart(canvasId, cfData) {
+         return new Chart(document.getElementById(canvasId), {
+            type: 'bar',
+            data: {
+                labels: cfData.years,
+                datasets: [
+                    { label: 'Closing Cash Balance', data: cfData.closingBalance, backgroundColor: '#A0AEC0' },
+                    { label: 'Net Cash from Operations', data: cfData.netCashOps, backgroundColor: '#718096' }
+                ]
+            },
+            options: chartOptions
+        });
+    }
+    let tawWinCFChartInstance = createCFChart('tawWinCFChart', appData.tawWin.cfSummary);
+    let timeLinkCFChartInstance = createCFChart('timeLinkCFChart', appData.timeLink.cfSummary);
+
+    let mainPnLChartInstance, mainCFChartInstance;
+
+    function updateMainProjectionCharts(locationKey) {
+        if (mainPnLChartInstance) mainPnLChartInstance.destroy();
+        mainPnLChartInstance = createPnLChart('mainPnLChart', appData[locationKey].pnlSummary);
+
+        if (mainCFChartInstance) mainCFChartInstance.destroy();
+        mainCFChartInstance = createCFChart('mainCFChart', appData[locationKey].cfSummary);
+    }
+    
+    document.getElementById('projectionLocationToggle').addEventListener('change', function() {
+        updateMainProjectionCharts(this.value);
+    });
+    
+    updateMainProjectionCharts('tawWin');
+
+    new Chart(document.getElementById('investmentMetricsChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Payback (Yrs)', 'Avg ROI (%)', 'NPV (MMK)', 'IRR (%)'],
+            datasets: [
+                {
+                    label: 'Taw Win Center',
+                    data: [appData.tawWin.paybackPeriod, appData.tawWin.roi, appData.tawWin.npv, appData.tawWin.irr],
+                    backgroundColor: '#A0AEC0'
+                },
+                {
+                    label: 'Time Link Condo',
+                    data: [appData.timeLink.paybackPeriod, appData.timeLink.roi, appData.timeLink.npv, appData.timeLink.irr],
+                    backgroundColor: '#718096'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                 y: {
+                    beginAtZero: true,
+                    type: 'logarithmic', 
+                    ticks: {
+                         callback: function(value, index, values) {
+                            if (value === 100000000) return '100M';
+                            if (value === 10000000) return '10M';
+                            if (value === 1000000) return '1M';
+                            if (value === 100000) return '100K';
+                            if (value === 10000) return '10K';
+                            if (value === 1000) return '1K';
+                            if (value === 100) return '100';
+                            if (value === 10) return '10';
+                            if (value === 1) return '1';
+                            return null;
+                        }
+                    }
+                },
+                x: chartOptions.scales.x
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) { label += ': '; }
+                            if (context.parsed.y !== null) {
+                                const metricName = context.chart.data.labels[context.dataIndex];
+                                if (metricName.includes('MMK')) {
+                                    label += formatMMK(context.parsed.y);
+                                } else if (metricName.includes('%')) {
+                                    label += context.parsed.y.toFixed(1) + '%';
+                                } else if (metricName.includes('Yrs')) {
+                                    label += context.parsed.y.toFixed(2) + ' Yrs';
+                                } else {
+                                     label += context.parsed.y;
+                                }
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+</script>
+</body>
+</html>
